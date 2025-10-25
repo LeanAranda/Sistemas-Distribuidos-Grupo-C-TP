@@ -221,3 +221,35 @@ const showSuccess = (message) => {
     document.getElementById('success').appendChild(sucessDiv);
     deleteErrorDiv(sucessDiv);
 }
+
+ document.getElementById("generate-excel").addEventListener("click", async function(event) {
+    event.preventDefault();
+
+    try {
+        const response = await fetch("http://localhost:9091/api/export/donations", {
+            method: "GET"
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error al generar el Excel: ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+
+        a.download = "donations.xlsx";
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+        console.error("Error descargando el Excel:", error);
+        alert("No se pudo descargar el archivo. Revisa la consola para más detalles.");
+    }
+});
