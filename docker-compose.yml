@@ -116,7 +116,7 @@ services:
     build: ./rest-server
     container_name: rest_server
     links:
-      - db:db # ← ESTO FALTA
+      - db:db 
     depends_on:
       db:
         condition: service_healthy
@@ -124,9 +124,9 @@ services:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SERVER_PORT: 9091
+      SERVER_PORT: 9093
     ports:
-      - "9091:9091"
+      - "9093:9093"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot" ]
       interval: 10s
