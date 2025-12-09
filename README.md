@@ -1,15 +1,17 @@
-# Sistemas Distribuidos - Grupo C - TP
-Este proyecto implementa un sistema con **gRPC (Java/Spring Boot)**, **API Gateway (Node/Express)**, **Kafka**, **MySQL** y **Mailhog** para pruebas de envío de correos.
+# ONG Empuje Comunitario
+Este proyecto implementa un sistema con **gRPC (Java/Spring Boot, NodeJS)**, **API Gateway (NodeJS/ExpressJS)**, **Kafka**, **MySQL**, **GraphQL** y **Mailhog** para pruebas de envío de correos.
 
 ---
 
 ## 🚀 Tecnologías usadas
 - **Java 17 + Spring Boot** → Servidor gRPC
-- **Node.js + Express** → API Gateway (REST → gRPC)
+- **Node.js + Express** → API Gateway (REST → gRPC, Kafka, SOAP)
 - **MySQL 8** → Base de datos
 - **Mailhog** → Captura de correos (testing)
 - **Docker + Docker Compose** → Orquestación de servicios
+- **Node.js + Express + GraphQL** → Servidor GraphQL
 - **Kafka** → Medio de comunicación publicador/suscriptor
+- **Java 17 + Spring Boot + Swagger** → Servidor que exporta datos en formato Excel
 
 ---
 
@@ -17,6 +19,7 @@ Este proyecto implementa un sistema con **gRPC (Java/Spring Boot)**, **API Gatew
 
 - [Documentación del gRPC Server](https://github.com/UlisesChoco/Sistemas-Distribuidos-Grupo-C-TP/blob/master/grpc%20server/README.md)
 - [Documentación del gRPC Client](https://github.com/UlisesChoco/Sistemas-Distribuidos-Grupo-C-TP/blob/master/grpc%20client/README.md)
+- [Documentación del GraphQL Server](https://github.com/UlisesChoco/ONG-Empuje-Comunitario/blob/master/graphql-server/Readme.md)
 
 ---
 ## Integrantes
@@ -34,8 +37,8 @@ Antes de comenzar, se debe tener instalado:
 ## 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/UlisesChoco/Sistemas-Distribuidos-Grupo-C-TP.git
-cd Sistemas-Distribuidos-Grupo-C-TP
+git clone https://github.com/UlisesChoco/ONG-Empuje-Comunitario.git
+cd ONG-Empuje-Comunitario
 ```
 
 ## 2. Configurar variables de entorno
@@ -52,37 +55,53 @@ En el archivo .env se debe definir:
 
 Ejemplo mínimo:
 ```python
-MYSQL_ROOT_PASSWORD=root
-MYSQL_DB_NAME=sist_distribuidos
+MYSQL_ROOT_PASSWORD=changeme-root
+MYSQL_DB_NAME=ong-empuje-comunitario
+MYSQL_DB_USERNAME=changeme-user
+MYSQL_DB_PASSWORD=changeme-pass
 
-SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/sist_distribuidos?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-SPRING_DATASOURCE_USERNAME=root
-SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
+SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/ong_empuje_comunitario?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+SPRING_DATASOURCE_USERNAME=${MYSQL_DB_USERNAME}
+SPRING_DATASOURCE_PASSWORD=${MYSQL_DB_PASSWORD}
 
-JWT_PRIVATE_KEY=secret
+JWT_PRIVATE_KEY=changeme-jwt-key
 SPRING_SECURITY_JWT_USER_GENERATOR=AUTH-SPRING-BACKEND
+
+SPRING_MAIL_HOST=mailhog
+SPRING_MAIL_PORT=1025
+
+WSDL_URL=https://soap-app-latest.onrender.com/?wsdl
 ```
 ## 3. Levantar los servicios
 Desde el directorio raíz del proyecto, ejecutar:
 ```bash
 docker compose up --build
 ```
-Esto levanta:
+Esto levanta los siguientes contenedores:
 
-* db: MySQL con la base definida en .env
+* **db**: MySQL con la base de datos definida en el .env
 
-* grpc-server: aplicación Spring Boot
+* **grpc-server**: servidor principal Spring Boot con acceso a la base de datos y comunicación vía gRPC
 
-* grpc-server: aplicación NodeJS
+* **grpc-client**: gateway NodeJS que expone métodos gRPC del **grpc-server** a través de comunicación vía HTTP
 
-* mailhog: servidor SMTP falso para pruebas de correo
+* **graphql-server**: servidor NodeJS + GraphQL
+
+* **mailhog**: servidor SMTP falso para pruebas de correo
+
+* **kafka**: servidor Kafka para comunicación asincrónica
+
+* **kafbat-ui**: interfaz gráfica para interactuar con el servidor Kafka
+
+* **rest-server**: servidor Spring Boot + Swagger que expone métodos REST para generar informes Excel de ciertos datos de la BD
 ## 4. Verificar servicios
+A continuación se listan los puertos y rutas donde está corriendo cada uno de los servicios levantados con Docker.
 
-* Servidor (gRPC server):
-Corre en http://localhost:9090.
+* gRPC Server (Servidor principal con acceso a la base de datos):
+http://localhost:9090
 
-* Cliente (gRPC client):
-Corre en http://localhost:8080.
+* gRPC Client (Gateway encargado de exponer los métodos gRPC del servidor principal):
+http://localhost:8080
 
     A la hora de visualizar la pantalla del login, pueden iniciar sesión a través de un usuario que el servidor registra automáticamente en la base de datos:
     - ```Nombre de usuario``` | ```Correo electrónico```: Presidente | tomaslopez1987@gmail.com
@@ -93,15 +112,25 @@ Corre en http://localhost:8080.
 <br>
 
 * Kafka:
-KafbatUI corre en http://localhost:8999/
-
-<br>
+http://localhost:9092
 
 * MySQL:
 Puerto 3306. Usuario/clave los definidos en .env.
 
+* GraphQL Server:
+http://localhost:8080
+
+* Mailhog (servidor):
+http://localhost:1025
+
 * Mailhog (UI web):
 http://localhost:8025
+
+* Kafbat UI (UI web de Kafka):
+http://localhost:8999
+
+* Rest Server (Swagger):
+http://localhost:9093
 
 ## 🧪 Probar Mailhog
 
